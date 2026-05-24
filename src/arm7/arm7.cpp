@@ -1,5 +1,10 @@
 #include "arm7.h"
 
+ARM7::ARM7()
+{
+    PC() = 0x08000000;
+}
+
 bool ARM7::getFlag(CPUFlag flag)
 {
     return getBit(CPSR, flag);
@@ -161,51 +166,56 @@ bool ARM7::IsDataProcessing(u32 opcode)
 
 Instruction ARM7::DecodeARMInstruction(u32 opcode)
 {
-    Instruction instr;
+    Instruction instr{};
     if (IsBranchAndBranchExchange(opcode))
     {
-        return;
+        return instr;
     }
     if (IsBlockDataTransfer(opcode))
     {
-        return;
+        return instr;
     }
     if (IsBranchAndBranchWithLink(opcode))
     {
-        return;
+        return instr;
     }
     if (IsSoftwareInterrupt(opcode))
     {
-        return;
+        return instr;
     }
     if (IsUndefined(opcode))
     {
-        return;
+        return instr;
     }
     if (IsSingleDataTransfer(opcode))
     {
-        return;
+        return instr;
     }
     if (IsSingleDataSwap(opcode))
     {
-        return;
+        return instr;
     }
     if (IsMultiply(opcode))
     {
-        
-        return;
+        return instr;
     }
     if (IsHalfwordDataTransferRegister(opcode))
     {
-        return;
+        return instr;
     }
     if (IsHalfwordDataTransferImmediate(opcode))
     {
-        return;
+        return instr;
     }
     if (IsDataProcessing(opcode))
     {
-        return;
+        instr.operand2 = opcode & 0b1111'1111'1111;
+        instr.rd = (opcode >> 12) & 0b1111;
+        instr.rn = (opcode >> 16) & 0b1111;
+        instr.opcode = (opcode >> 21) & 0b1111;
+        instr.instructionType = InstructionType::DataProcessing;
+        instr.immediate = (opcode >> 25) & 0x1;
+        return instr;
     }
     
     
@@ -214,15 +224,22 @@ Instruction ARM7::DecodeARMInstruction(u32 opcode)
 
 u32 ARM7::fetch()
 {
+    u32 pc = PC();
+
+    u32 opcode;
+
     if (CpuState == ARM)
     {
+        opcode = mmu->read32(pc);
         PC() += 4;
     }
-    else if (CpuState == THUMB)
+    else
     {
+        opcode = mmu->read16(pc);
         PC() += 2;
     }
-    
+
+    return opcode;
 }
 
 Instruction ARM7::decode(u32 opcode)
@@ -235,11 +252,45 @@ Instruction ARM7::decode(u32 opcode)
     {
 
     }
+    return Instruction();
 }
+
+Cycles ARM7::handleDataProcessing(Instruction instr)
+{
+            u16 operand;
+            switch (instr.opcode)
+            {
+                case 0xD: // MOV
+                {
+                    std::cout << "MOV!\n";
+                    if (instr.immediate)
+                    {
+                        R[instr.rd] = instr.operand2;
+                    }
+                    else
+                    {
+                        R[instr.rd] = R[instr.operand2];
+                    }
+                    break;
+                }
+            }
+}
+
+bool ARM7::checkCondition()
 
 Cycles ARM7::execute(Instruction instr)
 {
+    
+    switch(instr.instructionType)
+    {
 
+        case DataProcessing:
+        {
+            handleDataProcessing(instr);
+            break;
+        }
+    }
+    return 0;
 }
 
 Cycles ARM7::step()

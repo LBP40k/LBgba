@@ -17,4 +17,9 @@ public:
 
     u8 read8(u32 address);
     void write8(u32 address, u8 value);
+    
+    u16 read16(u32 address);
+    u32 read32(u32 address);
+    void write16(u32 address, u16 value);
+    void write32(u32 address, u32 value);
 };

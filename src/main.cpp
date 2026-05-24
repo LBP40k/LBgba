@@ -1,15 +1,18 @@
 #include <iostream>
 #include "mmu/mmu.h"
+#include "arm7/arm7.h"
 #include <SDL2/SDL.h>
 
 int main(int argc, char* argv[])
 {
     std::cout << "Hello World!\n";
 
+    ARM7 arm7;
     auto mmu = std::make_unique<MMU>();
-    mmu->loadRom("resources/roms/gbalooprom.gba");
+    mmu->loadRom("resources/roms/test.gba");
+    arm7.mmu = mmu.get();
 
-
+    arm7.step();
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
         return 1;

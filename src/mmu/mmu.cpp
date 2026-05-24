@@ -2,6 +2,8 @@
 #include "mmu/mmu.h"
 #include "mmu.h"
 
+
+
 void MMU::loadRom(std::string_view filePath)
 {
     std::cout << "Attempting to load rom!\n";
@@ -45,4 +47,32 @@ void MMU::write8(u32 address, u8 value)
         IWRAM[address-0x03000000] = value;
     if (address >= 0x08000000 && address <= 0x09FFFFFF)
         GamePak[address-0x08000000] = value;
+}
+
+u16 MMU::read16(u32 address)
+{
+    return read8(address)
+        | (read8(address + 1) << 8);
+}
+
+u32 MMU::read32(u32 address)
+{
+    return read8(address)
+        | (read8(address + 1) << 8)
+        | (read8(address + 2) << 16)
+        | (read8(address + 3) << 24);
+}
+
+void MMU::write16(u32 address, u16 value)
+{
+    write8(address, value & 0xFF);
+    write8(address + 1, (value >> 8) & 0xFF);
+}
+
+void MMU::write32(u32 address, u32 value)
+{
+    write8(address, value & 0xFF);
+    write8(address + 1, (value >> 8) & 0xFF);
+    write8(address + 2, (value >> 16) & 0xFF);
+    write8(address + 3, (value >> 24) & 0xFF);
 }

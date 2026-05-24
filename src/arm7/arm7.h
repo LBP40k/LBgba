@@ -1,5 +1,6 @@
 #pragma once
 #include "common/common.h"
+#include "mmu/mmu.h"
 
 using Cycles = int;
 
@@ -23,6 +24,27 @@ enum CPUFlag
    F = 6,
    T = 5, 
 };
+
+enum CPUConditions
+{
+    EQ,
+    NE,
+    CS_HS,
+    CC_LO,
+    MI,
+    PL,
+    VS,
+    VC,
+    HI,
+    LS,
+    GE,
+    LT,
+    GT,
+    LE,
+    AL,
+    NV
+};
+
 
 enum InstructionType
 {
@@ -55,6 +77,7 @@ struct Instruction
     bool writeBack; // W bit
     bool preIndex; //P bit
     bool up; // U bit
+    bool immediate; // I bit
 
 };
 
@@ -62,6 +85,7 @@ struct Instruction
 class ARM7
 {
 public:
+    ARM7();
     ARM7State CpuState = ARM;
     u32 R[31]{};
     u32 CPSR{};
@@ -79,10 +103,15 @@ public:
     u32& SP(){return R[13];}
     u32& LR(){return R[14];}
     u32& PC(){return R[15];}
+
+    MMU* mmu;
 private:
     u32 fetch();
     Instruction decode(u32 opcode);
+    
     Cycles execute(Instruction instr);
+
+    Cycles handleDataProcessing(Instruction instr);
 
     bool IsBranchAndBranchExchange(u32 opcode);
     bool IsBlockDataTransfer(u32 opcode);
